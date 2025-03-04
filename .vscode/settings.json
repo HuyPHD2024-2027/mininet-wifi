@@ -1,0 +1,5 @@
+{
+  "python.analysis.extraPaths": ["./mn_wifi"],
+  "python.linting.enabled": true,
+  "python.formatting.provider": "black"
+} 

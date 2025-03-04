@@ -1,0 +1,97 @@
+{
+  "experimental": {
+    "codeCompletion": true,
+    "codeCompletionMode": "advanced",
+    "fastFileSearch": true,
+    "parallelProcessing": true
+  },
+  "editor": {
+    "formatOnSave": true,
+    "formatOnPaste": true,
+    "tabSize": 4,
+    "insertSpaces": true,
+    "wordWrap": "off",
+    "rulers": [80, 100],
+    "trimTrailingWhitespace": true
+  },
+  "language": {
+    "python": {
+      "snippets": {
+        "oppnet": {
+          "prefix": "oppnet",
+          "body": [
+            "from mn_wifi.node import OpportunisticNode",
+            "from mn_wifi.opportunisticLink import opportunisticLink",
+            "from mn_wifi.crdt import GCounter, OrSet",
+            "",
+            "def topology():",
+            "    net = Mininet_wifi()",
+            "    $0"
+          ]
+        },
+        "crdt": {
+          "prefix": "crdt",
+          "body": [
+            "def merge_crdt_state(self, other_node):",
+            "    self.forwarded_packets.merge(other_node.forwarded_packets)",
+            "    self.rl_states_counter.merge(other_node.rl_states_counter)",
+            "    $0"
+          ]
+        }
+      },
+      "analysis": {
+        "importStrategy": "usedOnly",
+        "diagnosticMode": "workspace",
+        "typeCheckingMode": "basic"
+      }
+    }
+  },
+  "search": {
+    "exclude": [
+      "**/__pycache__",
+      "**/*.pyc",
+      "**/node_modules",
+      "**/venv",
+      "**/.git"
+    ],
+    "useIgnoreFiles": true,
+    "followSymlinks": false
+  },
+  "files": {
+    "watcherExclude": {
+      "**/results/**": true,
+      "**/logs/**": true,
+      "**/*.log": true
+    },
+    "associations": {
+      "*.py": "python",
+      "*.mn": "python"
+    }
+  },
+  "workspace": {
+    "preferredPath": [
+      "./mn_wifi",
+      "./examples"
+    ]
+  },
+  "performance": {
+    "maxFileSize": 5242880,
+    "maxFiles": 5000,
+    "useFileSystemWatcher": true,
+    "enableIndexing": true,
+    "indexingInterval": 3600,
+    "cacheTimeout": 3600,
+    "workerThreads": 4
+  },
+  "projects": {
+    "oppnet": {
+      "root": "./",
+      "pythonPath": "python3",
+      "environmentFile": ".env",
+      "ignorePaths": [
+        "**/test/**",
+        "**/docs/**"
+      ]
+    }
+  }
+} 
