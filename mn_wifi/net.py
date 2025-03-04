@@ -28,6 +28,7 @@ from mn_wifi.link import IntfWireless, wmediumd, _4address, HostapdConfig, \
     WirelessLink, TCWirelessLink, ITSLink, WifiDirectLink, adhoc, mesh, \
     master, managed, physicalMesh, PhysicalWifiDirectLink, _4addrClient, \
     _4addrAP, phyAP
+from mn_wifi.opportunisticLink import opportunisticLink
 from mn_wifi.mobility import Tracked as TrackedMob, model as MobModel, \
     Mobility as mob, ConfigMobility, ConfigMobLinks, TimedModel
 from mn_wifi.module import Mac80211Hwsim
@@ -46,6 +47,8 @@ from mn_wifi.wwan.link import WWANLink
 from mn_wifi.wwan.net import Mininet_WWAN
 from mn_wifi.btvirt.net import Mininet_btvirt
 from mn_wifi.wwan.node import WWANNode
+
+from mn_wifi.opportunisticNode import OpportunisticNode
 
 VERSION = "2.6"
 
@@ -653,6 +656,10 @@ class Mininet_wifi(Mininet, Mininet_IoT, Mininet_WWAN, Mininet_btvirt):
             if node2 and self.wmediumd_mode == error_prob:
                 self.infra_wmediumd_link(node1, node2, **params)
             return link
+        elif cls == opportunisticLink:
+            link = cls(node=node1, **params)
+            self.links.append(link)
+            return link
         elif cls == physicalMesh:
             cls(node=node1, **params)
         elif cls == LowPANLink:
@@ -797,6 +804,13 @@ class Mininet_wifi(Mininet, Mininet_IoT, Mininet_WWAN, Mininet_btvirt):
         if self.allAutoAssociation:
             if self.autoAssociation and not self.configWiFiDirect:
                 self.auto_association()
+
+        for node in self.stations:
+            for intf in node.wintfs.values():
+                if hasattr(intf, 'mac'):
+                    from mn_wifi.constants import register_station_mac
+                    register_station_mac(node.name, intf.mac)
+                    # info(f"*** Registered MAC mapping: {node.name} -> {intf.mac}\n")
 
         self.built = True
 
