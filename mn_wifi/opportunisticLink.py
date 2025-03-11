@@ -23,46 +23,8 @@ class opportunisticLink(adhoc):
         if intf and hasattr(intf, 'mac'):
             register_station_mac(node.name, intf.mac)
         
-        # Start discovery thread after network is built
-        # We'll do this in configure_opportunistic instead of here
     
-    def configure_opportunistic(self):
-        """Configure the interface for opportunistic networking"""
-        try:
-            # Make sure the node is ready for commands
-            if not hasattr(self.node, 'shell') or not self.node.shell:
-                error(f"Node {self.node.name} shell not ready\n")
-                return False
-                
-            # If node is waiting, wait for it to finish
-            if hasattr(self.node, 'waiting') and self.node.waiting:
-                info(f"Waiting for node {self.node.name} to be ready...\n")
-                count = 0
-                while self.node.waiting and count < 10:  # 10 second timeout
-                    time.sleep(1)
-                    count += 1
-                
-                if self.node.waiting:
-                    error(f"Timeout waiting for node {self.node.name}\n")
-                    return False
-            
-            # Configure interface
-            info(f"Configuring opportunistic mode for {self.node.name}\n")
-            
-            # Start the discovery thread only after configuration
-            self.discovery_thread = threading.Thread(target=self.discover_neighbors)
-            self.discovery_thread.daemon = True
-            self.discovery_thread.start()
-            
-            return True
-            
-        except Exception as e:
-            error(f"Error configuring opportunistic mode: {str(e)}\n")
-            import traceback
-            error(traceback.format_exc())
-            return False
-    
-    def discover_neighbors(self):
+    def discover_neighbors(self, crdt=False):
         """Discover neighboring nodes"""
         # Wait a few seconds to ensure network is ready
         time.sleep(5)
@@ -98,7 +60,7 @@ class opportunisticLink(adhoc):
                                 last_time = self.last_encounters.get(neighbor.name, 0)
                                 if current_time - last_time > self.discovery_interval:
                                     info(f"*** {self.node.name} discovered {neighbor.name} (RSSI: {rssi}dB)\n")
-                                    self.node.handle_encounter(neighbor, rssi)
+                                    self.node.handle_encounter(neighbor, rssi, crdt)
                                     self.last_encounters[neighbor.name] = current_time
                         except Exception as e:
                             error(f"Error processing station: {str(e)}\n")
@@ -109,7 +71,7 @@ class opportunisticLink(adhoc):
                 time.sleep(1)
     
 
-    def configure_opportunistic(self):
+    def configure_opportunistic(self, crdt=False):
         """Configure interface for opportunistic networking"""
         # Configure mesh interface
         intf = self.node.params['wlan'][0]
@@ -129,17 +91,19 @@ class opportunisticLink(adhoc):
         time.sleep(1)
         
         # Start neighbor discovery thread
-        self.start_discovery()
+        self.start_discovery(crdt)
         
-    def start_discovery(self):
+    def start_discovery(self, crdt=False):
         """Start the neighbor discovery thread"""
         if not self.discovery_thread:
             import threading
-            self.discovery_thread = threading.Thread(target=self.discover_neighbors)
+            self.discovery_thread = threading.Thread(target=self.discover_neighbors, args=(crdt,))
             self.discovery_thread.daemon = True
             self.discovery_thread.start()
-            info(f"*** Started neighbor discovery for {self.node.name}\n")
-        
+            if crdt:
+                info(f"*** Started neighbor discovery for {self.node.name} with CRDTs\n")
+            else:
+                info(f"*** Started neighbor discovery for {self.node.name}\n")
     def _find_node_by_mac(self, mac):
         """Find node object by MAC address using the global registry"""
         try:

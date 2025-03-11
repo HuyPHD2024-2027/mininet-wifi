@@ -217,7 +217,7 @@ class PacketTracker:
     
     def __init__(self, max_history=1000):
         self.max_history = max_history
-        self.forwarded_packets = {}  # packet_id -> packet_data
+        self.received_packets = {}  # packet_id -> packet_data
         self.successful_deliveries = {}  # packet_id -> delivery_data
         self.failed_deliveries = {}  # packet_id -> failure_data
         self.packet_history = deque(maxlen=max_history)
@@ -238,7 +238,7 @@ class PacketTracker:
             'ttl': packet_data.get('ttl', 64)
         }
         
-        self.forwarded_packets[packet_id] = packet_data
+        self.received_packets[packet_id] = packet_data
         
         # Add to history
         self.packet_history.append({
@@ -252,8 +252,8 @@ class PacketTracker:
         """Record packet delivery success or failure"""
         timestamp = time.time()
         
-        if packet_id in self.forwarded_packets:
-            packet_data = self.forwarded_packets[packet_id]
+        if packet_id in self.received_packets:
+            packet_data = self.received_packets[packet_id]
             
             if success:
                 delivery_data = {
@@ -284,7 +284,7 @@ class PacketTracker:
         """Get statistics about packet forwarding and delivery"""
         successful_count = len(self.successful_deliveries)
         failed_count = len(self.failed_deliveries)
-        total_forwarded = len(self.forwarded_packets)
+        total_forwarded = len(self.received_packets)
         
         if total_forwarded > 0:
             success_rate = successful_count / total_forwarded
@@ -306,13 +306,13 @@ class PacketTracker:
             'success_rate': success_rate,
             'average_delay': avg_delay,
             'average_hops': avg_hops,
-            'packet_ids': list(self.forwarded_packets.keys())
+            'packet_ids': list(self.received_packets.keys())
         }
     
     def to_dict(self):
         """Convert tracker state to dictionary for serialization"""
         return {
-            'forwarded_packets': self.forwarded_packets,
+            'received_packets': self.received_packets,
             'successful_deliveries': self.successful_deliveries,
             'failed_deliveries': self.failed_deliveries
         }
@@ -321,7 +321,7 @@ class PacketTracker:
     def from_dict(cls, data):
         """Create tracker from dictionary"""
         tracker = cls()
-        tracker.forwarded_packets = data.get('forwarded_packets', {})
+        tracker.received_packets = data.get('received_packets', {})
         tracker.successful_deliveries = data.get('successful_deliveries', {})
         tracker.failed_deliveries = data.get('failed_deliveries', {})
         return tracker 

@@ -20,7 +20,7 @@ class ForwardingAgent:
                          default=float('inf'))
         
         # Include global state from G-Counter
-        global_state = current_node.rl_states_counter.value()
+        global_state = current_node.network_state.value()
         
         return {
             'contacts': contacts,

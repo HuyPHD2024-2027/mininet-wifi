@@ -83,11 +83,11 @@ class CRDTPacket(Packet):
         if 'bundle_store' in self.payload:
             bundle_count = len(self.payload['bundle_store'])
             summary.append(f"Bundles: {bundle_count}")
-        if 'rl_states_counter' in self.payload:
-            counter_val = sum(self.payload['rl_states_counter'].values())
+        if 'network_state' in self.payload:
+            counter_val = sum(self.payload['network_state'].values())
             summary.append(f"Counter: {counter_val}")
-        if 'forwarded_packets' in self.payload:
-            fwd_count = len(self.payload['forwarded_packets'])
-            summary.append(f"Forwarded: {fwd_count}")
+        if 'received_packets' in self.payload:
+            fwd_count = len(self.payload['received_packets'])
+            summary.append(f"Received: {fwd_count}")
         
         return ", ".join(summary) 
