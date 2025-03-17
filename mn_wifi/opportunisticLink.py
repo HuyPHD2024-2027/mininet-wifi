@@ -60,7 +60,7 @@ class opportunisticLink(adhoc):
                                 last_time = self.last_encounters.get(neighbor.name, 0)
                                 if current_time - last_time > self.discovery_interval:
                                     info(f"*** {self.node.name} discovered {neighbor.name} (RSSI: {rssi}dB)\n")
-                                    self.node.handle_encounter(neighbor, rssi, crdt)
+                                    self.handle_encounter(neighbor, rssi, crdt)
                                     self.last_encounters[neighbor.name] = current_time
                         except Exception as e:
                             error(f"Error processing station: {str(e)}\n")
@@ -69,7 +69,28 @@ class opportunisticLink(adhoc):
             except Exception as e:
                 error(f"Error in discovery: {str(e)}\n")
                 time.sleep(1)
-    
+    def handle_encounter(self, neighbor, rssi, crdt=False):
+        """Handle encountering another node"""
+        try:
+            # Update contact history
+            self.node.update_network_state(neighbor, rssi)
+            
+            # 1. Generate and send a packet with arbitrary destination
+            self.node._generate_and_send_packet(neighbor)
+            
+            # 2. Exchange CRDT data
+            if crdt:
+                self.node.send_crdt_update(neighbor.name)
+
+            # 3. Check bundles that might be deliverable
+            self.node._check_bundles(neighbor, crdt)
+
+            info(f"*** {self.node.name} completed encounter with {neighbor.name}\n")
+        
+        except Exception as e:
+            error(f"Error in handle_encounter: {str(e)}\n")
+            import traceback
+            error(traceback.format_exc())
 
     def configure_opportunistic(self, crdt=False):
         """Configure interface for opportunistic networking"""

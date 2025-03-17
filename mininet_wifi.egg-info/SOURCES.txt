@@ -154,6 +154,14 @@ mn_wifi/sumo/traci/main.py
 mn_wifi/sumo/traci/rebuildConstants.py
 mn_wifi/sumo/traci/storage.py
 mn_wifi/sumo/traci/traciToHex.py
+mn_wifi/utils/__init__.py
+mn_wifi/utils/bundle_manager.py
+mn_wifi/utils/logging.py
+mn_wifi/utils/network.py
+mn_wifi/utils/packet_handler.py
+mn_wifi/utils/routing.py
+mn_wifi/utils/saver.py
+mn_wifi/utils/state_tracker.py
 mn_wifi/wwan/__init__.py
 mn_wifi/wwan/clean.py
 mn_wifi/wwan/link.py

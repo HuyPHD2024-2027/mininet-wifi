@@ -1,12 +1,13 @@
 MININET = mininet/mininet/*.py
 MININET_WIFI = mn_wifi/*.py
+UTILS = mn_wifi/utils/*.py
 TEST = mn_wifi/test/*.py
 EXAMPLES = mn_wifi/examples/*.py
 MN = bin/mn
 PYTHON ?= python
 PYMN = $(PYTHON) -B bin/mn
 BIN = $(MN)
-PYSRC = $(MININET) $(MININET_WIFI) $(TEST) $(EXAMPLES) $(BIN)
+PYSRC = $(MININET) $(MININET_WIFI) $(TEST) $(EXAMPLES) $(BIN) $(UTILS)
 MNEXEC = mnexec
 MANPAGES = mn.1 mnexec.1
 P8IGN = E251,E201,E302,E202,E126,E127,E203,E226

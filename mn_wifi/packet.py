@@ -86,8 +86,8 @@ class CRDTPacket(Packet):
         if 'network_state' in self.payload:
             counter_val = sum(self.payload['network_state'].values())
             summary.append(f"Counter: {counter_val}")
-        if 'received_packets' in self.payload:
-            fwd_count = len(self.payload['received_packets'])
-            summary.append(f"Received: {fwd_count}")
+        if 'forwarded_packets' in self.payload:
+            fwd_count = len(self.payload['forwarded_packets'])
+            summary.append(f"Forwarded: {fwd_count}")
         
         return ", ".join(summary) 

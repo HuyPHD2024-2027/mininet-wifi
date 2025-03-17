@@ -39,6 +39,7 @@ class NetworkState:
     def __init__(self, node_id: str):
         self.node_id = node_id
         self.timestamp = time.time()
+        self.MAX_HISTORY = 5  # Limit state history to 5 elements
 
         self.node_info: Optional[NodeInfo] = None
         self.neighbors: Dict[str, NodeInfo] = {}  # neighbor_id -> NodeInfo
@@ -132,9 +133,9 @@ class NetworkState:
         }
         self.state_history.append(state_change)
         
-        # Keep only recent history (last 100 changes)
-        if len(self.state_history) > 1:
-            self.state_history = self.state_history[-1:]
+        # Keep only the 5 most recent changes
+        if len(self.state_history) > self.MAX_HISTORY:
+            self.state_history = self.state_history[-self.MAX_HISTORY:]
     
     def _calculate_distance(self, pos1: Tuple[float, float, float], 
                           pos2: Tuple[float, float, float]) -> float:
@@ -309,10 +310,15 @@ class OrSet:
     """Observed-Remove Set CRDT that behaves like a set for packet IDs"""
     def __init__(self):
         self._elements = set()  # Internal set for packet IDs
+        self.MAX_ELEMENTS = 5  # Maximum number of elements to store
     
     def add(self, packet_id):
         """Add a packet ID to the set"""
         self._elements.add(packet_id)
+        # Limit the number of elements
+        if len(self._elements) > self.MAX_ELEMENTS:
+            # Convert to list to get the most recent elements (assuming packet IDs have some ordering)
+            self._elements = set(list(self._elements)[-self.MAX_ELEMENTS:])
     
     def remove(self, packet_id):
         """Remove a packet ID from the set"""
@@ -324,25 +330,17 @@ class OrSet:
             self._elements.update(other._elements)
         elif isinstance(other, (set, list)):
             self._elements.update(other)
-    
-    def __contains__(self, packet_id):
-        """Enable 'in' operator: packet_id in received_packets"""
-        return packet_id in self._elements
-    
-    def __iter__(self):
-        """Enable iteration: for packet_id in received_packets"""
-        return iter(self._elements)
-    
-    def __len__(self):
-        """Enable len(): len(received_packets)"""
-        return len(self._elements)
+            
+        # Ensure we maintain the element limit after merging
+        if len(self._elements) > self.MAX_ELEMENTS:
+            self._elements = set(list(self._elements)[-self.MAX_ELEMENTS:])
     
     @property
     def elements(self):
         """Get the underlying set for serialization"""
-        return list(self._elements)
+        return list(self._elements)[-self.MAX_ELEMENTS:] if len(self._elements) > self.MAX_ELEMENTS else list(self._elements)
     
     @elements.setter
     def elements(self, new_elements):
         """Set elements from deserialized data"""
-        self._elements = set(new_elements) 
+        self._elements = set(new_elements[-self.MAX_ELEMENTS:] if len(new_elements) > self.MAX_ELEMENTS else new_elements) 
