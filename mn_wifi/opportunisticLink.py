@@ -15,10 +15,12 @@ class opportunisticLink(adhoc):
         self.node = node
         self.intf = intf
         self.name = params.get('intf', f'{node.name}-wlan0')
-        self.discovery_interval = params.get('discovery_interval', 5)
+        self.beacon_interval = params.get('beacon_interval', 5)
         self.last_encounters = {}
         self.discovery_thread = None
-
+        self.queue_length = params.get('queue_length', 10)
+        self.hop_count = params.get('hop_count', 5)
+        self.ttl = params.get('ttl', 60)
         # Register node's MAC
         if intf and hasattr(intf, 'mac'):
             register_station_mac(node.name, intf.mac)
@@ -58,14 +60,14 @@ class opportunisticLink(adhoc):
                             neighbor = get_node_by_mac(mac)
                             if neighbor:
                                 last_time = self.last_encounters.get(neighbor.name, 0)
-                                if current_time - last_time > self.discovery_interval:
+                                if current_time - last_time > self.beacon_interval:
                                     info(f"*** {self.node.name} discovered {neighbor.name} (RSSI: {rssi}dB)\n")
                                     self.handle_encounter(neighbor, rssi, crdt)
                                     self.last_encounters[neighbor.name] = current_time
                         except Exception as e:
                             error(f"Error processing station: {str(e)}\n")
                 
-                time.sleep(self.discovery_interval)
+                time.sleep(self.beacon_interval)
             except Exception as e:
                 error(f"Error in discovery: {str(e)}\n")
                 time.sleep(1)
@@ -75,14 +77,11 @@ class opportunisticLink(adhoc):
             # Update contact history
             self.node.update_network_state(neighbor, rssi)
             
-            # 1. Generate and send a packet with arbitrary destination
-            self.node._generate_and_send_packet(neighbor)
-            
-            # 2. Exchange CRDT data
+            # 1. Exchange CRDT data
             if crdt:
                 self.node.send_crdt_update(neighbor.name)
-
-            # 3. Check bundles that might be deliverable
+                
+            # 2. Check bundles that might be deliverable
             self.node._check_bundles(neighbor, crdt)
 
             info(f"*** {self.node.name} completed encounter with {neighbor.name}\n")

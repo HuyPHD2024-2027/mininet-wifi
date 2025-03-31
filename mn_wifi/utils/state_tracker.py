@@ -234,7 +234,7 @@ class PacketTracker:
             'priority': packet_data.get('priority', 1),
             'creation_time': packet_data.get('timestamp', timestamp),
             'forwarded_time': timestamp,
-            'hops': packet_data.get('hops', 0),
+            'hop_count': packet_data.get('hop_count', 0),
             'ttl': packet_data.get('ttl', 64)
         }
         
@@ -260,7 +260,7 @@ class PacketTracker:
                     'packet_id': packet_id,
                     'delivered_time': timestamp,
                     'delay': delay or (timestamp - packet_data['forwarded_time']),
-                    'hops': packet_data['hops']
+                    'hop_count': packet_data['hop_count']
                 }
                 self.successful_deliveries[packet_id] = delivery_data
             else:
@@ -296,8 +296,8 @@ class PacketTracker:
         avg_delay = sum(delays) / len(delays) if delays else 0
         
         # Calculate hop counts
-        hop_counts = [data['hops'] for data in self.successful_deliveries.values()]
-        avg_hops = sum(hop_counts) / len(hop_counts) if hop_counts else 0
+        hop_counts = [data['hop_count'] for data in self.successful_deliveries.values()]
+        avg_hop_count = sum(hop_counts) / len(hop_counts) if hop_counts else 0
         
         return {
             'total_forwarded': total_forwarded,
@@ -305,7 +305,7 @@ class PacketTracker:
             'failed_deliveries': failed_count,
             'success_rate': success_rate,
             'average_delay': avg_delay,
-            'average_hops': avg_hops,
+            'average_hop_count': avg_hop_count,
             'packet_ids': list(self.received_packets.keys())
         }
     

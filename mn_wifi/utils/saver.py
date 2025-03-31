@@ -28,6 +28,7 @@ class OpportunisticSaver:
             
         self.crdt_enabled = crdt_enabled
         self.metrics = defaultdict(list)
+        self.metrics['hop_count'] = []  # Add hop_count to metrics
         self._start_time = time.time()
         
         # Set up logging
@@ -43,6 +44,7 @@ class OpportunisticSaver:
         self.packet_deliveries = []
         self.packet_stats = []
         self.encounter_events = []
+        self.throughput_stats = []
     
     def log_encounter(self, node_name: str, neighbor_name: str, rssi: float, position: tuple):
         """Log encounter information"""
@@ -56,8 +58,8 @@ class OpportunisticSaver:
         self.encounter_events.append(entry)
         self.logger.info(f"Logged encounter: {node_name} -> {neighbor_name}")
         
-    def log_packet_delivery(self, source: str, destination: str, delay: float, success: bool):
-        """Log packet delivery information"""
+    def log_packet_delivery(self, source: str, destination: str, delay: float, success: bool, metrics: dict = None):
+        """Log packet delivery information with hop count and throughput metrics"""
         entry = {
             'timestamp': time.time(),
             'source': source,
@@ -66,13 +68,42 @@ class OpportunisticSaver:
             'success': success,
             'crdt_enabled': self.crdt_enabled
         }
+        
+        # Add hop count and other metrics if provided
+        if metrics:
+            entry.update(metrics)
+            if 'hop_count' in metrics:
+                self.metrics['hop_count'].append(metrics['hop_count'])
+        
         self.packet_deliveries.append(entry)
         
         # Update metrics
         self.metrics['delays'].append(delay)
         self.metrics['success_rate'].append(1 if success else 0)
-        self.logger.info(f"Logged packet delivery: {source} -> {destination}, delay: {delay:.2f}s, success: {success}")
+        if metrics:
+            self.metrics['throughput'].append(metrics.get('throughput', 0))
+            self.metrics['bytes_delivered'].append(metrics.get('packet_size', 0))
+        
+        self.logger.info(
+            f"Logged packet delivery: {source} -> {destination}, "
+            f"delay: {delay:.2f}s, success: {success}, "
+            f"hop count: {metrics.get('hop_count', 'unknown')}, "
+            f"throughput: {metrics.get('throughput', 0):.2f} packets/s"
+        )
     
+    def log_packet_reach_destination(self, source: str, destination: str, delay: float, success: bool):
+        """Log packet reach destination information"""
+        entry = {
+            'timestamp': time.time(),
+            'source': source,
+            'destination': destination, 
+            'delay': delay,
+            'success': success,
+            'crdt_enabled': self.crdt_enabled
+        }
+        
+        self.packet_deliveries.append(entry)
+        
     def log_packet_stats(self, node_name: str, stats: dict):
         """Log packet statistics"""
         entry = {
@@ -87,6 +118,52 @@ class OpportunisticSaver:
         self.metrics['throughput'].append(stats.get('delivered', 0))
         self.metrics['overhead'].append(stats.get('forwarded', 0))
         self.logger.info(f"Logged packet stats for {node_name}: {stats}")
+    
+    def log_throughput_stats(self, node_name: str, stats: dict):
+        """Log periodic throughput statistics"""
+        entry = {
+            'timestamp': time.time(),
+            'node': node_name,
+            'stats': stats,
+            'crdt_enabled': self.crdt_enabled
+        }
+        
+        self.throughput_stats.append(entry)
+        
+        # Update aggregate metrics
+        self.metrics['node_throughput'][node_name] = stats['current_throughput']
+        self.metrics['node_bytes_throughput'][node_name] = stats['bytes_throughput']
+        
+        self.logger.info(
+            f"Logged throughput stats for {node_name}: "
+            f"current: {stats['current_throughput']:.2f} packets/s, "
+            f"average: {stats['average_throughput']:.2f} packets/s"
+        )
+    
+    def log_packet_expiry(self, source: str, destination: str, packet_id: str, stored_time: float, ttl: float):
+        """Log packet expiry due to TTL"""
+        entry = {
+            'timestamp': time.time(),
+            'source': source,
+            'destination': destination,
+            'packet_id': packet_id,
+            'stored_time': stored_time,
+            'ttl': ttl,
+            'success': False,
+            'reason': 'TTL expired',
+            'crdt_enabled': self.crdt_enabled
+        }
+        
+        # Record packet expiry
+        self.packet_deliveries.append(entry)
+        
+        # Update metrics to record failure
+        self.metrics['success_rate'].append(0)
+        
+        self.logger.info(
+            f"Packet expired: {source} -> {destination}, "
+            f"Packet ID: {packet_id}, stored for: {time.time() - stored_time:.2f}s, TTL: {ttl}s"
+        )
     
     def generate_performance_graphs(self):
         """Generate performance comparison graphs"""
@@ -145,12 +222,69 @@ class OpportunisticSaver:
             plt.savefig(os.path.join(figures_dir, 'overhead.png'))
             plt.close()
         
+        # 5. Hop Count Distribution
+        if self.metrics.get('hop_count'):
+            plt.figure(figsize=(10, 6))
+            plt.hist(self.metrics['hop_count'], bins=min(10, max(self.metrics['hop_count'])+1), alpha=0.75)
+            plt.title('Hop Count Distribution')
+            plt.xlabel('Number of Hops')
+            plt.ylabel('Frequency')
+            plt.xticks(range(0, max(self.metrics['hop_count'])+1))
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.savefig(os.path.join(figures_dir, 'hop_count_distribution.png'))
+            plt.close()
+            
+            # 6. Hop Count vs Delay Scatter Plot
+            if len(self.metrics['hop_count']) == len(self.metrics['delays']):
+                plt.figure(figsize=(10, 6))
+                plt.scatter(self.metrics['hop_count'], self.metrics['delays'], alpha=0.6)
+                plt.title('Hop Count vs Delivery Delay')
+                plt.xlabel('Number of Hops')
+                plt.ylabel('Delay (seconds)')
+                plt.grid(True, linestyle='--', alpha=0.7)
+                plt.savefig(os.path.join(figures_dir, 'hop_count_vs_delay.png'))
+                plt.close()
+        
         # Save metrics summary
         summary = self._calculate_aggregate_stats()
         with open(os.path.join(self.exp_dir, 'performance_summary.json'), 'w') as f:
             json.dump(summary, f, indent=2)
             
         self.logger.info("Completed performance graph generation")
+
+    def generate_throughput_graphs(self):
+        """Generate throughput-specific graphs"""
+        figures_dir = os.path.join(self.exp_dir, 'figures')
+        if not os.path.exists(figures_dir):
+            os.makedirs(figures_dir)
+        
+        # 1. Throughput over time
+        plt.figure(figsize=(12, 6))
+        timestamps = [entry['timestamp'] - self._start_time for entry in self.throughput_stats]
+        throughputs = [entry['stats']['current_throughput'] for entry in self.throughput_stats]
+        
+        plt.plot(timestamps, throughputs, 'b-', linewidth=2)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.title('Network Throughput Over Time')
+        plt.xlabel('Time (seconds)')
+        plt.ylabel('Throughput (packets/s)')
+        plt.savefig(os.path.join(figures_dir, 'throughput_time_series.png'), dpi=300)
+        plt.close()
+        
+        # 2. Per-node throughput comparison
+        if self.metrics['node_throughput']:
+            plt.figure(figsize=(10, 6))
+            nodes = list(self.metrics['node_throughput'].keys())
+            throughputs = [self.metrics['node_throughput'][node] for node in nodes]
+            
+            plt.bar(nodes, throughputs)
+            plt.title('Average Throughput by Node')
+            plt.xlabel('Node')
+            plt.ylabel('Throughput (packets/s)')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.savefig(os.path.join(figures_dir, 'node_throughput_comparison.png'), dpi=300)
+            plt.close()
 
     def save_experiment_results(self, experiment_config: Dict):
         """Save all experiment results after completion"""
@@ -238,6 +372,15 @@ class OpportunisticSaver:
                 'total_throughput': int(sum(self.metrics['throughput'])) if self.metrics.get('throughput') else 0,
                 'average_overhead': float(np.mean(self.metrics['overhead'])) if self.metrics.get('overhead') else 0
             })
+            
+            # Add hop count statistics if available
+            if self.metrics.get('hop_count'):
+                stats.update({
+                    'average_hop_count': float(np.mean(self.metrics['hop_count'])),
+                    'max_hop_count': int(max(self.metrics['hop_count'])),
+                    'min_hop_count': int(min(self.metrics['hop_count'])),
+                    'hop_count_std': float(np.std(self.metrics['hop_count'])) if len(self.metrics['hop_count']) > 1 else 0
+                })
         else:
             stats.update({
                 'total_packets': 0,
@@ -245,7 +388,11 @@ class OpportunisticSaver:
                 'delay_std': 0,
                 'success_rate': 0,
                 'total_throughput': 0,
-                'average_overhead': 0
+                'average_overhead': 0,
+                'average_hop_count': 0,
+                'max_hop_count': 0,
+                'min_hop_count': 0,
+                'hop_count_std': 0
             })
         
         return stats

@@ -1,0 +1,14 @@
+{
+  "num_nodes": 5,
+  "duration": 60,
+  "max_packets": 0,
+  "max_crdt_packets": 0,
+  "mobility_model": "RandomDirection",
+  "mobility_params": {
+    "max_x": 100,
+    "max_y": 100,
+    "min_v": 0.5,
+    "max_v": 0.8,
+    "seed": 20
+  }
+}

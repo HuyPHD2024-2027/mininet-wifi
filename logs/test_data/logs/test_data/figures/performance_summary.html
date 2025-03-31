@@ -1,0 +1,137 @@
+
+        <html>
+        <head>
+            <style>
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+                th, td {
+                    text-align: right;
+                    padding: 8px;
+                    border: 1px solid #ddd;
+                }
+                th {
+                    background-color: #f2f2f2;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                .true {
+                    background-color: #e6f7ff;
+                }
+                .false {
+                    background-color: #fff2e6;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>Performance Metrics Summary: CRDT vs. Non-CRDT</h2>
+        <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>node_count</th>
+      <th>use_crdt</th>
+      <th>average_latency</th>
+      <th>average_throughput</th>
+      <th>success_rate</th>
+      <th>missing_packets</th>
+      <th>average_hop_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>3</td>
+      <td>False</td>
+      <td>0.289</td>
+      <td>4.451</td>
+      <td>0.838</td>
+      <td>15.6</td>
+      <td>0.687</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>True</td>
+      <td>0.329</td>
+      <td>5.215</td>
+      <td>0.889</td>
+      <td>6.8</td>
+      <td>0.365</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>False</td>
+      <td>0.350</td>
+      <td>4.009</td>
+      <td>0.817</td>
+      <td>26.2</td>
+      <td>1.308</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>True</td>
+      <td>0.405</td>
+      <td>4.671</td>
+      <td>0.919</td>
+      <td>6.8</td>
+      <td>0.951</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>False</td>
+      <td>0.410</td>
+      <td>3.542</td>
+      <td>0.709</td>
+      <td>53.8</td>
+      <td>1.629</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>True</td>
+      <td>0.471</td>
+      <td>4.293</td>
+      <td>0.924</td>
+      <td>8.4</td>
+      <td>1.239</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>False</td>
+      <td>0.499</td>
+      <td>2.993</td>
+      <td>0.646</td>
+      <td>91.6</td>
+      <td>1.692</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>True</td>
+      <td>0.576</td>
+      <td>3.444</td>
+      <td>0.918</td>
+      <td>11.8</td>
+      <td>1.342</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>False</td>
+      <td>0.653</td>
+      <td>2.008</td>
+      <td>0.483</td>
+      <td>162.4</td>
+      <td>1.693</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>True</td>
+      <td>0.746</td>
+      <td>2.310</td>
+      <td>0.761</td>
+      <td>42.6</td>
+      <td>1.359</td>
+    </tr>
+  </tbody>
+</table>
+        </body>
+        </html>
+        

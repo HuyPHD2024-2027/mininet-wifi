@@ -39,7 +39,7 @@ class NetworkState:
     def __init__(self, node_id: str):
         self.node_id = node_id
         self.timestamp = time.time()
-        self.MAX_HISTORY = 5  # Limit state history to 5 elements
+        self.MAX_HISTORY = 10  # Limit state history to 5 elements
 
         self.node_info: Optional[NodeInfo] = None
         self.neighbors: Dict[str, NodeInfo] = {}  # neighbor_id -> NodeInfo
@@ -55,8 +55,6 @@ class NetworkState:
         self.link_quality: Dict[str, float] = {}  # neighbor_id -> quality (0-1)
         self.congestion_level: float = 0.0  # 0-1 scale
         
-        # Track state changes
-        self.state_history: List[Dict] = []
 
     def update_node_info(self, position: Tuple[float, float, float], 
                         transmission_range: float, battery_level: float,
@@ -131,12 +129,7 @@ class NetworkState:
             'type': change_type,
             **extra_info
         }
-        self.state_history.append(state_change)
         
-        # Keep only the 5 most recent changes
-        if len(self.state_history) > self.MAX_HISTORY:
-            self.state_history = self.state_history[-self.MAX_HISTORY:]
-    
     def _calculate_distance(self, pos1: Tuple[float, float, float], 
                           pos2: Tuple[float, float, float]) -> float:
         """Calculate Euclidean distance between two positions"""
@@ -153,10 +146,6 @@ class NetworkState:
                 for n_id, info in self.neighbors.items()
             },
             'encounter_history': self.encounter_history,
-            'packet_stats': self.packet_stats,
-            'link_quality': self.link_quality,
-            'congestion_level': self.congestion_level,
-            'state_history': self.state_history
         }
     
     @classmethod
@@ -179,8 +168,7 @@ class NetworkState:
         })
         state.link_quality = data.get('link_quality', {})
         state.congestion_level = data.get('congestion_level', 0.0)
-        state.state_history = data.get('state_history', [])
-        
+
         return state
 
 class GCounter:
@@ -307,40 +295,175 @@ class GCounter:
         return counter
 
 class OrSet:
-    """Observed-Remove Set CRDT that behaves like a set for packet IDs"""
+    """
+    Observed-Remove Set CRDT supporting conflict-free add/remove operations
+    Each element is tagged with a unique identifier ⟨packet_id, tag⟩, 
+    where tag is a unique identifier ⟨sender_id:timestamp⟩
+    """
     def __init__(self):
-        self._elements = set()  # Internal set for packet IDs
-        self.MAX_ELEMENTS = 5  # Maximum number of elements to store
+        self._pending = {}  # packet_id -> {(sender_id, timestamp)}
+        self._acknowledged = {}  # packet_id -> {(sender_id, timestamp)}
+        self.MAX_ELEMENTS = 100  # Maximum number of elements to store per packet_id
     
-    def add(self, packet_id):
-        """Add a packet ID to the set"""
-        self._elements.add(packet_id)
-        # Limit the number of elements
-        if len(self._elements) > self.MAX_ELEMENTS:
-            # Convert to list to get the most recent elements (assuming packet IDs have some ordering)
-            self._elements = set(list(self._elements)[-self.MAX_ELEMENTS:])
+    def add(self, packet_id, sender_id=None, timestamp=None):
+        """
+        Add a packet_id to the set with the given tag
+        If sender_id or timestamp not provided, generate defaults
+        """
+        if sender_id is None:
+            sender_id = "default"
+        if timestamp is None:
+            timestamp = time.time()
+        
+        # Initialize set for this packet_id if needed
+        if packet_id not in self._pending:
+            self._pending[packet_id] = set()
+        
+        # Add the tag
+        self._pending[packet_id].add((sender_id, timestamp))
+        
+        # Limit size if needed
+        if len(self._pending[packet_id]) > self.MAX_ELEMENTS:
+            # Convert to list and sort by timestamp to keep most recent
+            sorted_tags = sorted(self._pending[packet_id], key=lambda x: x[1])
+            self._pending[packet_id] = set(sorted_tags[-self.MAX_ELEMENTS:])
     
-    def remove(self, packet_id):
-        """Remove a packet ID from the set"""
-        self._elements.discard(packet_id)  # Using discard instead of remove to avoid KeyError
+    def remove(self, packet_id, sender_id=None, timestamp=None):
+        """
+        Remove a packet_id from the set by moving its tags to removed set
+        """
+        if sender_id is None:
+            sender_id = "default"
+        if timestamp is None:
+            timestamp = time.time()
+            
+        # Check if the packet exists in the added set
+        if packet_id in self._pending and self._pending[packet_id]:
+            # Initialize removed set for this packet if needed
+            if packet_id not in self._acknowledged:
+                self._acknowledged[packet_id] = set()
+            
+            # Move tags from added to removed
+            self._acknowledged[packet_id].update(self._pending[packet_id])
+            
+            # Clear the added set for this packet
+            self._pending[packet_id] = set()
+            
+            # Limit size of removed set if needed
+            if len(self._acknowledged[packet_id]) > self.MAX_ELEMENTS:
+                sorted_tags = sorted(self._acknowledged[packet_id], key=lambda x: x[1])
+                self._acknowledged[packet_id] = set(sorted_tags[-self.MAX_ELEMENTS:])
     
     def merge(self, other):
-        """Merge with another set"""
-        if isinstance(other, OrSet):
-            self._elements.update(other._elements)
-        elif isinstance(other, (set, list)):
-            self._elements.update(other)
+        """
+        Merge with another OR-Set
+        Implementation of observed-remove set semantics:
+        1. All added elements from other are merged into this set
+        2. All removed elements from other are merged into this set
+        3. Elements are considered "in the set" if they have adds not covered by removes
+        """
+        if not isinstance(other, OrSet):
+            error("Cannot merge with non-OrSet object")
+            return
+        
+        # Merge added elements
+        for packet_id, tags in other._pending.items():
+            if packet_id not in self._pending:
+                self._pending[packet_id] = set()
+            self._pending[packet_id].update(tags)
             
-        # Ensure we maintain the element limit after merging
-        if len(self._elements) > self.MAX_ELEMENTS:
-            self._elements = set(list(self._elements)[-self.MAX_ELEMENTS:])
+            # Apply size limit
+            if len(self._pending[packet_id]) > self.MAX_ELEMENTS:
+                sorted_tags = sorted(self._pending[packet_id], key=lambda x: x[1])
+                self._pending[packet_id] = set(sorted_tags[-self.MAX_ELEMENTS:])
+        
+        # Merge removed elements
+        for packet_id, tags in other._acknowledged.items():
+            if packet_id not in self._acknowledged:
+                self._acknowledged[packet_id] = set()
+            self._acknowledged[packet_id].update(tags)
+            
+            # Apply size limit
+            if len(self._acknowledged[packet_id]) > self.MAX_ELEMENTS:
+                sorted_tags = sorted(self._acknowledged[packet_id], key=lambda x: x[1])
+                self._acknowledged[packet_id] = set(sorted_tags[-self.MAX_ELEMENTS:])
+            
+            # Remove tags that are in the removed set from the added set
+            if packet_id in self._pending:
+                self._pending[packet_id] -= self._acknowledged[packet_id]
     
     @property
     def elements(self):
-        """Get the underlying set for serialization"""
-        return list(self._elements)[-self.MAX_ELEMENTS:] if len(self._elements) > self.MAX_ELEMENTS else list(self._elements)
+        """
+        Get the effective elements in the set (added but not removed)
+        Returns a list of (packet_id, (sender_id, timestamp)) tuples
+        """
+        result = []
+        for packet_id, tags in self._pending.items():
+            if tags:  # Only include if there are tags not removed
+                for tag in tags:
+                    result.append((packet_id, tag))
+        
+        # Apply global size limit if needed
+        if len(result) > self.MAX_ELEMENTS:
+            # Sort by timestamp
+            result.sort(key=lambda x: x[1][1])
+            result = result[-self.MAX_ELEMENTS:]
+        
+        return result
+    
+    @property 
+    def pending_packets(self):
+        """Get packet IDs that have been added but not acknowledged"""
+        # Create a copy of the items to avoid dictionary modification during iteration
+        items = list(self._pending.items())
+        return [packet_id for packet_id, tags in items if tags]
+
+    @property
+    def acknowledged_packets(self):
+        """Get packet IDs that have been acknowledged (removed)"""
+        return list(self._acknowledged.keys())
     
     @elements.setter
-    def elements(self, new_elements):
-        """Set elements from deserialized data"""
-        self._elements = set(new_elements[-self.MAX_ELEMENTS:] if len(new_elements) > self.MAX_ELEMENTS else new_elements) 
+    def elements(self, element_list):
+        """
+        Set elements from a deserialized list
+        Each element should be a tuple (packet_id, (sender_id, timestamp))
+        """
+        self._pending = {}
+        self._acknowledged = {}
+        
+        for item in element_list:
+            if isinstance(item, tuple) and len(item) == 2:
+                packet_id, tag = item
+                if isinstance(tag, tuple) and len(tag) == 2:
+                    sender_id, timestamp = tag
+                    self.add(packet_id, sender_id, timestamp)
+                else:
+                    # Backward compatibility for simple packet IDs
+                    self.add(packet_id)
+            else:
+                # Backward compatibility for simple packet IDs
+                self.add(item)
+    
+    def to_dict(self):
+        """Convert to dictionary for serialization"""
+        return {
+            'added': {pid: list(tags) for pid, tags in self._pending.items()},
+            'removed': {pid: list(tags) for pid, tags in self._acknowledged.items()}
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        """Create from dictionary representation"""
+        orset = cls()
+        
+        if 'added' in data:
+            for pid, tags in data['added'].items():
+                orset._pending[pid] = set(tuple(tag) for tag in tags)
+        
+        if 'removed' in data:
+            for pid, tags in data['removed'].items():
+                orset._acknowledged[pid] = set(tuple(tag) for tag in tags)
+        
+        return orset 

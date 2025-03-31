@@ -13,17 +13,20 @@ class PacketType(Enum):
 
 class Packet:
     """Network packet that mimics TCP/UDP structure"""
-    def __init__(self, source, destination, packet_type=PacketType.DATA, ttl=64):
+    def __init__(self, source, destination, packet_type=PacketType.DATA, ttl=60):
         self.source = source
         self.destination = destination
         self.packet_type = packet_type
         self.ttl = ttl
-        self.hops = 0
         self.timestamp = time.time()
         self.payload = None
         self.sequence_number = 0
+        self.hop_count = 0
         self.packet_id = self._generate_packet_id()
     
+    def increase_hop_count(self):
+        self.hop_count += 1
+        
     def _generate_packet_id(self):
         """Generate a unique packet ID"""
         # Combine source, timestamp, and sequence number for uniqueness
@@ -34,7 +37,7 @@ class Packet:
     def __str__(self):
         """String representation of the packet"""
         return (f"Packet[{self.packet_type.name}] from {self.source} to {self.destination}, "
-                f"seq={self.sequence_number}, hops={self.hops}")
+                f"seq={self.sequence_number}, hop_count={self.hop_count}")
         
     def to_dict(self):
         """Convert packet to dictionary, ensuring all values are JSON serializable"""
@@ -43,11 +46,11 @@ class Packet:
             'destination': self.destination,
             'packet_type': self.packet_type.name,  # Use name instead of enum
             'ttl': self.ttl,
-            'hops': self.hops,
             'timestamp': self.timestamp,
             'payload': self.payload,
             'sequence_number': self.sequence_number,
-            'packet_id': self.packet_id
+            'packet_id': self.packet_id,
+            'hop_count': self.hop_count
         }
         
     @classmethod
@@ -56,7 +59,6 @@ class Packet:
         packet = cls(data['source'], data['destination'])
         packet.packet_type = PacketType[data['packet_type']]  # Convert name back to enum
         packet.ttl = data['ttl']
-        packet.hops = data['hops']
         packet.timestamp = data['timestamp']
         packet.payload = data['payload']
         packet.sequence_number = data['sequence_number']

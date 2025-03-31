@@ -1,0 +1,10 @@
+{
+  "experiment_duration": 139.59728527069092,
+  "crdt_enabled": true,
+  "total_packets": 419,
+  "average_delay": 14.109266054089712,
+  "delay_std": 13.076658006252467,
+  "success_rate": 1.0,
+  "total_throughput": 316,
+  "average_overhead": 0
+}

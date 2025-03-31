@@ -1,0 +1,14 @@
+{
+  "experiment_duration": 318.3856484889984,
+  "crdt_enabled": true,
+  "total_packets": 1376,
+  "average_delay": 49.65920266075883,
+  "delay_std": 37.31940161786741,
+  "success_rate": 0.33276904474002417,
+  "total_throughput": 2237,
+  "average_overhead": 0,
+  "average_hop_count": 2.1969476744186047,
+  "max_hop_count": 15,
+  "min_hop_count": 1,
+  "hop_count_std": 1.5736814294666122
+}
