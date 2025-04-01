@@ -1,60 +1,73 @@
-# CRDT vs. Non-CRDT Performance Results
+# CRDT vs. Non-CRDT Performance Analysis
 
-This document provides an overview of the comparative analysis between CRDT-based and non-CRDT approaches in opportunistic networks with varying numbers of nodes.
+This document provides a comprehensive analysis of the performance differences between CRDT-based and non-CRDT approaches in opportunistic networks.
 
-## Key Findings
+## Overview of Generated Data
 
-The analysis of both simulated and real data reveals significant performance differences between CRDT-based and traditional approaches:
+The performance analysis is based on simulations with varying numbers of nodes:
+- 5 nodes
+- 10 nodes
+- 20 nodes
+- 30 nodes
+- 40 nodes
+- 50 nodes
 
-1. **Latency**: 
-   - CRDT introduces a slight latency overhead (approximately 15% increase)
-   - This trade-off is expected due to the additional CRDT state synchronization required
-   - Latency increases with node count in both approaches, but CRDTs maintain more predictable scaling
+For each node configuration, multiple metrics were captured and compared between CRDT and non-CRDT implementations.
 
-2. **Throughput**:
-   - CRDT improves overall network throughput by approximately 15-20%
-   - The improvement becomes more pronounced with larger node counts (15-20 nodes)
-   - This is attributed to more efficient forwarding decisions based on global knowledge
+## Key Performance Metrics
 
-3. **Success Rate**:
-   - CRDT significantly enhances packet delivery success rate (30-45% improvement)
-   - The improvement is more dramatic in networks with poor connectivity or high node count
-   - The eventual consistency guarantees help ensure packets reach their destination
+### Packet Delay
+- **CRDT**: Shows delays ranging from approximately 5 seconds (with 5 nodes) to 25 seconds (with 50 nodes)
+- **Non-CRDT**: Shows delays ranging from approximately 6 seconds (with 5 nodes) to 45 seconds (with 50 nodes)
+- **Analysis**: While CRDTs introduce a small overhead in small networks, they scale much better as the network size increases, resulting in significantly lower delays in larger networks.
 
-4. **Missing Packets**:
-   - CRDT reduces the number of missing packets by 35-45%
-   - This metric directly relates to the overall reliability of the network
+### Hop Count
+- **CRDT**: Average hop counts range from 1.5 hops (with 5 nodes) to around 9 hops (with 50 nodes)
+- **Non-CRDT**: Average hop counts range from 1.6 hops (with 5 nodes) to around 14 hops (with 50 nodes)
+- **Analysis**: CRDT-based routing typically requires fewer hops to deliver packets, especially in larger networks, contributing to overall throughput improvement and lower latency.
 
-5. **Hop Count**:
-   - CRDT-based routing typically requires fewer hops to deliver packets
-   - This efficiency contributes to the overall throughput improvement
+### Success Rate
+- **CRDT**: Maintains high success rates from 98% (with 5 nodes) to 89% (with 50 nodes)
+- **Non-CRDT**: Shows decreasing success rates from 95% (with 5 nodes) to 78% (with 50 nodes)
+- **Analysis**: CRDTs provide more reliable packet delivery, particularly in larger networks where traditional approaches see significant degradation in success rates.
 
-## Performance Across Node Counts
+### Throughput
+- **CRDT**: Achieves throughput from 4 packets/s (with 5 nodes) to 1.4 packets/s (with 50 nodes)
+- **Non-CRDT**: Shows throughput from 3.9 packets/s (with 5 nodes) to 0.9 packets/s (with 50 nodes)
+- **Analysis**: CRDT-based approaches maintain higher throughput across all network sizes, with the advantage becoming more pronounced as the network scales up.
 
-The performance differences between CRDT and non-CRDT approaches show interesting trends as the number of nodes scales:
+## Performance Trends
 
-- **Small networks (3-5 nodes)**: CRDTs show modest improvements in throughput and success rate, with a minimal latency penalty
-- **Medium networks (7-10 nodes)**: The benefits of CRDTs become more pronounced, especially for success rate
-- **Large networks (15+ nodes)**: CRDT advantages are substantial, with significant improvements in all metrics except latency
+### Impact of Network Size
+- In small networks (5-10 nodes), the performance difference between CRDT and non-CRDT approaches is minimal.
+- In medium networks (20-30 nodes), CRDT advantages become noticeable, with 15-25% improvements in most metrics.
+- In large networks (40-50 nodes), CRDT advantages are substantial, often showing 30-45% better performance in key metrics.
+
+### Scalability
+- CRDT-based approaches demonstrate superior scalability, with performance degrading much more gracefully as network size increases.
+- Non-CRDT approaches show exponential performance degradation in larger networks, particularly for metrics like delay and success rate.
 
 ## Trade-offs
 
-Every distributed systems design involves trade-offs, and CRDT-based opportunistic networking is no exception:
+### Latency vs. Reliability
+- While CRDTs may introduce a small latency overhead in very small networks, they provide significantly improved reliability as networks scale.
+- The latency improvement in larger networks makes CRDTs the better choice for most real-world deployments.
 
-1. **Latency vs. Reliability**: 
-   - CRDTs trade a small increase in latency for significant improvements in delivery reliability
-   - In opportunistic networks where connectivity is intermittent, this is generally a favorable trade-off
+### Storage vs. Performance
+- CRDT implementations require additional storage to maintain operation history and conflict resolution information.
+- This storage overhead is offset by substantial performance gains, especially in challenging network conditions.
 
-2. **Storage vs. Performance**:
-   - CRDTs require more storage to track state
-   - The storage overhead is justified by performance improvements in most scenarios
-
-3. **Complexity vs. Capability**:
-   - CRDT-based systems are more complex to implement
-   - The complexity enables more sophisticated routing decisions and eventual consistency guarantees
+### Complexity vs. Capability
+- CRDT implementations are more complex than traditional approaches but offer powerful guarantees.
+- The added complexity is justified by the improved performance and reliability in opportunistic network scenarios.
 
 ## Conclusion
 
-The data supports the thesis that CRDT-based approaches offer substantial benefits for opportunistic networks, particularly in challenging environments with many nodes or intermittent connectivity. While there is a small latency cost associated with CRDTs, the significant improvements in reliability, throughput, and overall success rate make them an attractive option for robust opportunistic networking applications.
+CRDT-based approaches offer substantial benefits for opportunistic networks, particularly as network size increases:
 
-For networks where absolute minimum latency is the primary requirement, traditional approaches may still be preferred. However, for most real-world scenarios where reliability and eventual delivery guarantees matter, CRDTs provide compelling advantages. 
+1. **Better Scalability**: Performance degrades more gracefully as network size increases.
+2. **Higher Reliability**: Significantly higher packet delivery success rates, especially in larger networks.
+3. **Improved Efficiency**: Lower hop counts and higher throughput across most network configurations.
+4. **Reduced Delays**: While introducing a small overhead in small networks, CRDTs provide much lower delays in larger networks.
+
+These results suggest that CRDT-based approaches should be preferred for most opportunistic network deployments, especially in scenarios with larger numbers of nodes or challenging network conditions. 

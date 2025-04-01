@@ -16,117 +16,153 @@ OUTPUT_DIR = "logs/test_data"
 if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
-# Configuration parameters
-NODE_COUNTS = [3, 5, 7, 10, 15]  # Different numbers of nodes to simulate
-PACKET_COUNTS = [100, 150, 200, 250, 300]  # Corresponding packets per node count
+# Configuration parameters as requested by user
+NODE_COUNTS = [5, 10, 20, 30, 40, 50]  # Different numbers of nodes to simulate
+PACKET_COUNTS = [100, 150, 200, 250, 300, 350]  # Corresponding packets per node count
 RUNS_PER_CONFIG = 5  # Number of runs per configuration
 
-# Performance factors (how much CRDT improves/degrades performance)
-# Values above 1.0 mean CRDT performs worse, below 1.0 means CRDT performs better
-LATENCY_FACTOR = 1.15  # CRDT slightly increases latency
-THROUGHPUT_FACTOR = 0.85  # CRDT improves throughput
-SUCCESS_RATE_FACTOR = 0.7  # CRDT significantly improves success rate
-MISSING_PACKETS_FACTOR = 0.6  # CRDT reduces missing packets
-
-# Variance factors (how much randomness to introduce)
-VARIANCE = 0.2  # 20% variance
+# Custom performance parameters for the requested metrics
+# These are calibrated to match the user's requirements
 
 def generate_latency_data(node_count, packet_count, use_crdt):
-    """Generate random latency data in seconds"""
-    # Base latency increases with node count (more hops = more delay)
-    base_latency = 0.2 + (node_count * 0.03)
+    """Generate latency data with specific patterns"""
+    # For CRDT: 3-8s linear increase
+    # For non-CRDT: 3.4-12.2s with exponential increase at higher node counts
+    base_latency = 3.0 if use_crdt else 3.4
     
-    # Apply CRDT factor if enabled
     if use_crdt:
-        base_latency *= LATENCY_FACTOR
+        # Linear increase for CRDT
+        max_latency = 8.0
+        # Calculate where we are in the range from min to max nodes
+        node_factor = (node_count - NODE_COUNTS[0]) / (NODE_COUNTS[-1] - NODE_COUNTS[0])
+        # Linear mapping to latency range
+        avg_latency = base_latency + node_factor * (max_latency - base_latency)
+    else:
+        # Exponential increase for non-CRDT to make it worse at higher node counts
+        max_latency = 12.2
+        # Use a non-linear curve that gets steeper at higher node counts
+        if node_count <= 30:
+            # More gradual increase up to 30 nodes
+            node_factor = (node_count - NODE_COUNTS[0]) / (30 - NODE_COUNTS[0])
+            avg_latency = base_latency + node_factor * (7.5 - base_latency)
+        else:
+            # Steeper increase after 30 nodes
+            node_factor = (node_count - 30) / (NODE_COUNTS[-1] - 30)
+            avg_latency = 7.5 + node_factor * (max_latency - 7.5) * 1.5  # 1.5x steeper curve
     
-    # Generate random latencies with some variance
-    latencies = np.random.normal(
-        loc=base_latency, 
-        scale=base_latency * VARIANCE, 
-        size=packet_count
-    )
+    # Generate a distribution around the average latency
+    variance = avg_latency * 0.15  # 15% variance
+    latencies = np.random.normal(loc=avg_latency, scale=variance, size=packet_count)
     
     # Ensure no negative values
-    return np.maximum(latencies, 0.05)
+    return np.maximum(latencies, 1.0)  # Ensure latency is at least 1 second
 
-def generate_throughput_data(node_count, packet_count, use_crdt):
-    """Generate random throughput data in packets/second"""
-    # Base throughput decreases with node count (network contention)
-    base_throughput = 5.0 - (node_count * 0.2)
-    base_throughput = max(base_throughput, 1.0)  # Ensure minimum throughput
+def generate_hop_counts(node_count, packet_count, use_crdt):
+    """Generate hop count data with specific patterns"""
+    # For CRDT: Always less hop count than non-CRDT at every node count
+    base_hop_count = 1.5 if use_crdt else 1.8
     
-    # Apply CRDT factor if enabled
     if use_crdt:
-        base_throughput /= THROUGHPUT_FACTOR  # CRDT improves throughput
+        # CRDT hop count should be lower than non-CRDT for all node counts
+        # and increase more gradually
+        max_hop_count = 8.0
+        node_factor = (node_count - NODE_COUNTS[0]) / (NODE_COUNTS[-1] - NODE_COUNTS[0])
+        avg_hop_count = base_hop_count + node_factor * (max_hop_count - base_hop_count)
+    else:
+        # Non-CRDT will always have more hops
+        max_hop_count = 12.0
+        node_factor = (node_count - NODE_COUNTS[0]) / (NODE_COUNTS[-1] - NODE_COUNTS[0])
+        # Ensure non-CRDT hop count is always higher than CRDT at the same node count
+        # by adding a constant factor
+        avg_hop_count = base_hop_count + node_factor * (max_hop_count - base_hop_count) + 1.0
     
-    # Generate throughput measurements over time
-    throughputs = np.random.normal(
-        loc=base_throughput, 
-        scale=base_throughput * VARIANCE, 
-        size=min(30, packet_count // 3)  # Fewer throughput measurements than packets
-    )
+    # Calculate a reasonable max for hop counts
+    max_hops = min(int(avg_hop_count * 2), node_count)
     
-    return np.maximum(throughputs, 0.5)  # Ensure minimum throughput
+    # Generate random hop counts using a Poisson distribution (good for count data)
+    hop_counts = np.random.poisson(lam=avg_hop_count, size=packet_count)
+    
+    # Ensure hops are within reasonable range
+    hop_counts = np.minimum(hop_counts, max_hops)
+    hop_counts = np.maximum(hop_counts, 1)  # At least 1 hop
+    
+    return hop_counts
 
 def generate_success_rate(node_count, use_crdt):
-    """Generate packet delivery success rate"""
-    # Base success rate decreases with node count
-    base_success_rate = 0.95 - (node_count * 0.03)
+    """Generate success rate data with specific patterns"""
+    # For CRDT: 98%-89% with gradual decrease
+    # For non-CRDT: 95%-78% with drastic drop after 40 nodes
+    max_success_rate = 0.98 if use_crdt else 0.95
+    min_success_rate = 0.89 if use_crdt else 0.78
     
-    # Apply CRDT factor if enabled (CRDT improves success rate)
     if use_crdt:
-        base_success_rate = min(0.99, base_success_rate / SUCCESS_RATE_FACTOR)
+        # Gradual decrease for CRDT
+        node_factor = (node_count - NODE_COUNTS[0]) / (NODE_COUNTS[-1] - NODE_COUNTS[0])
+        success_rate = max_success_rate - node_factor * (max_success_rate - min_success_rate)
+    else:
+        # For non-CRDT, make the success rate drop drastically after 40 nodes
+        if node_count <= 30:
+            # Gradual decrease up to 30 nodes
+            node_factor = (node_count - NODE_COUNTS[0]) / (30 - NODE_COUNTS[0])
+            success_rate = max_success_rate - node_factor * (max_success_rate - 0.88)
+        elif node_count <= 40:
+            # Moderate decrease from 30 to 40 nodes
+            node_factor = (node_count - 30) / 10
+            success_rate = 0.88 - node_factor * 0.05
+        else:
+            # Steep decrease after 40 nodes
+            node_factor = (node_count - 40) / 10
+            success_rate = 0.83 - node_factor * (0.83 - min_success_rate)
     
-    # Add some randomness
-    success_rate = base_success_rate + random.uniform(-VARIANCE, VARIANCE) * base_success_rate
+    # Add some randomness, but less at the extremes
+    variation = 0.01 * (1 - node_factor)
+    success_rate += random.uniform(-variation, variation)
     
-    # Clamp to valid range
-    return max(0.1, min(0.99, success_rate))
+    # Ensure the result is between 0 and 1
+    return max(0.01, min(0.99, success_rate))
+
+def generate_throughput_data(node_count, packet_count, use_crdt):
+    """Generate throughput data with specific patterns"""
+    # For CRDT: Better throughput than non-CRDT at every node count
+    base_throughput = 4.2 if use_crdt else 3.8
+    
+    if use_crdt:
+        # CRDT throughput decreases more gradually
+        min_throughput = 1.8
+        node_factor = (node_count - NODE_COUNTS[0]) / (NODE_COUNTS[-1] - NODE_COUNTS[0])
+        avg_throughput = base_throughput - node_factor * (base_throughput - min_throughput)
+    else:
+        # Non-CRDT throughput will always be lower than CRDT at the same node count
+        min_throughput = 1.2
+        node_factor = (node_count - NODE_COUNTS[0]) / (NODE_COUNTS[-1] - NODE_COUNTS[0])
+        # Ensure non-CRDT throughput is always lower than CRDT at the same node count
+        avg_throughput = base_throughput - node_factor * (base_throughput - min_throughput) - 0.4
+    
+    # Add some variance
+    variance = avg_throughput * 0.1  # 10% variance
+    
+    # Generate throughput measurements
+    throughputs = np.random.normal(loc=avg_throughput, scale=variance, size=min(30, packet_count // 3))
+    
+    # Ensure no negative values
+    return np.maximum(throughputs, 0.1)  # Ensure throughput is at least 0.1
 
 def generate_missing_packets(packet_count, success_rate, use_crdt):
     """Calculate number of missing packets based on success rate"""
     expected_missing = int(packet_count * (1 - success_rate))
     
-    # Apply CRDT factor if enabled
-    if use_crdt:
-        expected_missing = int(expected_missing * MISSING_PACKETS_FACTOR)
-    
     # Add some randomness
-    variance = int(expected_missing * VARIANCE)
+    variance = int(expected_missing * 0.1)
     missing_packets = max(0, expected_missing + random.randint(-variance, variance))
     
     return missing_packets
-
-def generate_hop_counts(node_count, packet_count, use_crdt):
-    """Generate hop count data"""
-    # Base hop count is related to node count
-    max_hops = min(node_count - 1, 5)  # Maximum possible hops
-    
-    # Generate random hop counts with emphasis on lower values
-    # CRDT tends to find more optimal routes
-    if use_crdt:
-        weights = np.array([max_hops - i for i in range(max_hops + 1)])
-    else:
-        weights = np.array([max_hops + 1 - i for i in range(max_hops + 1)])
-    
-    weights = weights / weights.sum()  # Normalize weights
-    
-    # Generate hop counts based on weights
-    hop_counts = np.random.choice(
-        np.arange(max_hops + 1),
-        size=packet_count,
-        p=weights
-    )
-    
-    return hop_counts
 
 def generate_experiment_data():
     """Generate performance data for all configurations"""
     all_results = []
     
     for i, node_count in enumerate(NODE_COUNTS):
-        packet_count = PACKET_COUNTS[i]
+        packet_count = PACKET_COUNTS[i % len(PACKET_COUNTS)]
         
         for run in range(RUNS_PER_CONFIG):
             for use_crdt in [True, False]:
@@ -135,9 +171,9 @@ def generate_experiment_data():
                 missing_packets = generate_missing_packets(packet_count, success_rate, use_crdt)
                 delivered_packets = packet_count - missing_packets
                 
-                latencies = generate_latency_data(node_count, delivered_packets, use_crdt)
-                throughputs = generate_throughput_data(node_count, delivered_packets, use_crdt)
-                hop_counts = generate_hop_counts(node_count, delivered_packets, use_crdt)
+                latencies = generate_latency_data(node_count, packet_count, use_crdt)
+                throughputs = generate_throughput_data(node_count, packet_count, use_crdt)
+                hop_counts = generate_hop_counts(node_count, packet_count, use_crdt)
                 
                 # Calculate aggregate statistics
                 result = {
