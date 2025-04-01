@@ -14,7 +14,5 @@ doc/html
 doc/latex
 trunk
 .DS_Store
-logs/test_data/*
-logs/test_data/figures/*
-logs/test_data/logs/*
-logs/test_data/real_data_figures/*
+# Ignore all files in logs/test_data directory
+logs/test_data/
