@@ -14,4 +14,7 @@ doc/html
 doc/latex
 trunk
 .DS_Store
-logs/test_data/
+logs/test_data/*
+logs/test_data/figures/*
+logs/test_data/logs/*
+logs/test_data/real_data_figures/*
