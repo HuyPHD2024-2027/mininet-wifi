@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from mn_wifi.node import Station
+from mn_wifi.node import Node_wifi
 from mn_wifi.crdt import GCounter, OrSet, NodeInfo
 from mn_wifi.packet import Packet, PacketType
 from mn_wifi.constants import NODE_REGISTRY, register_node, get_node_by_name
@@ -17,8 +17,8 @@ from queue import Queue
 from mn_wifi.utils.logging import logger
 from collections import deque
 
-class OpportunisticNode(Station):
-    """Station with opportunistic networking capabilities"""
+class OpportunisticNode(Node_wifi):
+    """Node_wifi with opportunistic networking capabilities"""
     
     # Class variable for port management
     _used_ports = set()

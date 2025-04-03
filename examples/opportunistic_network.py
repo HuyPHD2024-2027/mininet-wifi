@@ -25,7 +25,7 @@ def topology(args):
         
         node = net.addStation(f'sta{i+1}', 
                             cls=OpportunisticNode, 
-                            position=f'{x},{y},0',
+                            min_x=0, max_x=1000, min_y=0, max_y=1000,
                             antennaHeight='1', 
                             antennaGain='5',
                             max_packets=args.max_packets if args.max_packets > 0 else float('inf'),
@@ -53,16 +53,19 @@ def topology(args):
                           cls=opportunisticLink,
                           ssid='oppnet', 
                           mode='mesh', 
-                          channel=5)
+                          channel=5,
+                          range_threshold=args.range_threshold,  # Add range threshold parameter
+                          beacon_interval=args.beacon_interval)  # Add beacon interval parameter
         # Configure opportunistic mode
         link.configure_opportunistic(crdt=True)
         
     if not args.no_plot:
-        net.plotGraph(max_x=100, max_y=100)
+        net.plotGraph(max_x=1000, max_y=1000)
     
     info("*** Configuring mobility model\n")
+    # Set the mobility model with explicit parameters
     net.setMobilityModel(time=0, model='RandomDirection',
-                        max_x=100, max_y=100,
+                        max_x=1000, max_y=1000,
                         min_v=0.5, max_v=0.8, seed=20)
     
     info("*** Starting network\n")
@@ -81,12 +84,14 @@ def topology(args):
             'max_crdt_packets': args.max_crdt_packets,
             'mobility_model': 'RandomDirection',
             'mobility_params': {
-                'max_x': 100,
-                'max_y': 100,
+                'max_x': 1000,
+                'max_y': 1000,
                 'min_v': 0.5,
                 'max_v': 0.8,
                 'seed': 20
-            }
+            },
+            'range_threshold': args.range_threshold,
+            'beacon_interval': args.beacon_interval
         }
         
         info(f"\n*** Running experiment for {args.experiment_time} seconds ***\n")
@@ -118,6 +123,10 @@ def parse_args():
                       help='Maximum number of CRDT packets per node (0 for unlimited, default: 0)')
     parser.add_argument('--no-plot', action='store_true',
                       help='Disable graph plotting')
+    parser.add_argument('--range-threshold', type=float, default=50.0,
+                      help='Range threshold in meters for neighbor discovery (default: 50.0)')
+    parser.add_argument('--beacon-interval', type=float, default=1.0,
+                      help='Beacon interval in seconds for neighbor discovery (default: 1.0)')
     return parser.parse_args()
 
 if __name__ == '__main__':

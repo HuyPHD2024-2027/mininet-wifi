@@ -5,10 +5,12 @@
   "max_crdt_packets": 0,
   "mobility_model": "RandomDirection",
   "mobility_params": {
-    "max_x": 100,
-    "max_y": 100,
+    "max_x": 300,
+    "max_y": 300,
     "min_v": 0.5,
     "max_v": 0.8,
     "seed": 20
-  }
+  },
+  "range_threshold": 75.0,
+  "beacon_interval": 0.5
 }
