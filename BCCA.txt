@@ -1,0 +1,538 @@
+Enhancing Node Reliability in Opportunistic
+Networks through Blockchain Integration
+Quang Huy Do†‡ , , Thiago Abreu† , Baah Kusi‡ , Nelly Chatue Diop‡ , Sami Souihi
+†
+† LISSI-TincNET
+
+Research Team, University of Paris-Est Creteil, France
+‡ Ejara lab, France
+Email: huy.dq184271@sis.hust.edu.vn, thiago.abreu@u-pec.fr, baah.kusi@ejara.afri
+ca, nelly@ejara
+.io, sami.souihi@u-pec.fr
+               and complex validation processes. To tackle the challenges
+linked with third-party payment systems, using blockchain
+[5] technology emerges as a game-changing solution. Unlike
+centralized systems, blockchain operates in a decentralized manner, providing bu
+ilt-in security
+ without the need for extensive
+               protective measures. This paper focuses on using blockchain
+specifically to store essential network information, boosting the
+reliability of nodes when handling peer-to-peer transactions.
+The decentralized and unchangeable nature of blockchain
+ensures secure storage of vital data, creating a foundation
+for peer-to-peer transactions. By employing blockchain to
+store network information, the system becomes more resilient
+and transparent, effectively overcoming issues associated with
+challenging environments and traditional payment methods.
+In this paper, we present an integrated opportunistic network
+with sharding-based blockchain [6]. Our proposed system
+leverages using smart contracts [7] to store essential network
+information to increase performance when finding optimal
+I. I NTRODUCTION
+routes for package transferring hence enhancing overall system
+In the bustling markets across various regions of Africa,
+performance.
+where daily transactions are an important part of daily life,
+• The first contribution is to propose the use of blockchain
+there is a noticeable shift away from using physical cash.
+in an opportunistic network environment, enhancing transThis shift is highlighte
+d by the signif
+icant adoption of mobile
+               parency, security, and reliability in transaction processing
+payments among internet users, with 84 percent in Kenya
+and network operation.
+and 60 percent in Nigeria opting for digital transactions in
+• We propose a sharding-based blockchain designed to en2021 [1]. Additionally, s
+everal African
+governments actively
+               hance throughput by distributing the workload across mulencourage
+ the use of mobile payments, e
+specially considering
+               tiple shards. This approach also simplifies management,
+the challenges posed by the COVID-19 pandemic [2]. This
+making it easier to handle and enhance the throughput of
+reflects a growing reliance on digital financial solutions. Beyond
+the blockchain system.
+just offering convenience, these mobile payments also play a
+The rest of this paper is organized as follows. Section II
+crucial role in promoting financial inclusion. This is particularly
+provides background work on blockchain, sharding, smart
+important in areas where a significant part of the population
+contracts, and opportunistic networks. Section III provides
+doesn’t have access to traditional banking services.
+Despite the progress made in digital transactions, the need an overview of our p
+roposed system
+and states the problem.
+               for a stable internet connection poses a significant challenge, T
+he performance analysis for sh
+arding-based blockchain with
+               particularly in areas like traditional marketplaces with limited
+opportunistic networks is pres
+ented in Sec. IV. Finally, Section
+               or sporadic network access [3]. To tackle this challenge, V concl
+udes the paper and highlights
+our future work.
+               opportunistic networking [4] offers a promising solution. It
+II. BACKGROUND
+relies on direct device-to-device (D2D) communication to
+enable secure and efficient transactions on mobile phones, A. Blockchain
+Blockchain [5] is a decentralized digital ledger technology
+even when there is no reliable internet connection available.
+that
+was originally developed to support the cryptocurrency
+This approach is especially beneficial in regions where network
+Bitcoin.
+The core idea of blockchain is decentralization, which
+conditions are unpredictable, meeting the growing demand for
+means
+that
+it does not store any of its databases in a central
+mobile payments in such areas.
+Another challenge in current digital payment is that it relies location. Instead
+, the blockchai
+n is copied and spread across
+               on third-party payment systems, which often involve extra fees a
+network of participants (i.e.
+computers). Whenever a new
+               Abstract—In challenging environments or low network resource
+areas, peer-to-peer payments face significant hurdles due to
+unreliable connectivity and limited infrastructure. Leveraging
+the integration of opportunistic networks and blockchain, this
+paper presents a novel approach to enhance node reliability
+and ensure transparency in transaction processing even in areas
+with limited network conditions. This method aims to ensure the
+resilience and efficiency of opportunistic network by integrating
+a sharding-based blockchain technology. Our approach securely
+stores essential network information and transaction data on the
+blockchain to foster a trustworthy and transparent transactional
+environment. We also apply sharding-based blockchain to increase
+network throughput and manageability. Integration of blockchain
+and opportunistic networks addresses the challenges of peer-topeer payments, est
+ablishes tamper
+-proof data, enhances node
+               reliability, and provides transparency in collaborative decisionm
+aking within the network.
+Index Terms—Opportunistic Networks, Blockchain, Smart
+Contract, Reliability, Security, Transparency.
+
+
+block is added to the blockchain, every computer on the
+network updates its blockchain to reflect the change. This
+decentralized architecture ensures robust and secure operations
+on the blockchain with the advantages of tamper resistance
+and no single-point failure vulnerabilities, which improves
+efficiency in domains requiring a high level of transparency
+and data privacy like the 5G network.
+
+opportunistic network environment is structured into two key
+layers: the controller layer and the infrastructure layer.
+The infrastructure layer comprises network nodes that are
+strategically organized into groups, creating more manageable
+subsets known as shards. This partitioning strategy is implemented to significan
+tly boost netwo
+rk throughput, allowing for
+               parallelized processing and improved scalability. By dividing
+the network into shards, we enhance the efficiency of data
+B. Sharding
+processing and resource utilization.
+Sharding, according to related work, [8] [6], is one of the
+On top of the infrastructure layer, we introduce the controller
+most promising solutions for the scalability problem. Originally, layer, which c
+onsists of seve
+ral distributed controllers. Each
+               sharding [9] is a type of database partitioning technique that co
+ntroller is responsible for ma
+naging and processing network
+               separates a huge database into much smaller, faster, more easily
+information within its assigne
+d shard. Essential network informanaged parts called data shards. The key idea o
+f sharding in mation includes distances between nodes, position, range, and
+                              the blockchain is to split the network into smalle
+r committees. status of each node, etc. This
+decentralized approach ensures
+               Each can independently process a disjoint set of transactions tha
+t controllers operate independ
+ently, acquiring and updating
+               (or a “shard”). With sharding, nodes only have to communicate net
+work data autonomously.
+with nodes within its shard and only store the transactions
+Our system model uses smart contracts to store essential
+happening in its shard.
+network information. This integration enhances both node
+reliability and transparency. Each controller monitors and
+C. Smart Contract
+securely records pertinent network data through smart contracts,
+Smart contracts, operating on blockchain technology, enensuring that critical in
+formation is im
+mutably stored on the
+               hance transparency and security for opportunistic networks
+blockchain. This proactive approach fortifies the reliability of
+by automating agreements and ensuring trust among parties.
+nodes in handling various transactions and introduces a layer
+These contracts, visible to authorized users on blockchains,
+of transparency to the network’s operations.
+offer transparency through their immutable and visible source
+To address the issue of unreliable connectivity, our system
+code [7]. By transferring digital trust inherent in blockchain leverages the opp
+ortunistic netw
+ork’s inherent capability to
+               transactions to complex agreements, smart contracts enable utiliz
+e direct D2D communication. In
+ scenarios where nodes
+               secure interactions even in unstable network conditions where exp
+erience intermittent connectiv
+ity, the system relies on
+               paths may change rapidly. Additionally, the automation and interm
+ediate nodes to relay transact
+ion data to controllers. The
+               enforcement capabilities of smart contracts contribute to im- con
+trollers, having relatively be
+tter connectivity and resources,
+               proved efficiency, traceability, and security within opportunisti
+c manage the communication wit
+h the blockchain network.
+               networks, aligning with the need for reliable communication This
+method ensures that even in ch
+allenging environments,
+               in unpredictable environments
+transaction data can eventually be synchronized with the
+D. Opportunistic Network
+blockchain once a stable connection is available.
+Opportunistic networks, characterized by their dynamic and
+2) Sharding-based Blockchain: The blockchain architecture
+self-organizing nature, operate on temporary connections rather
+is implemented using a sharding approach to address the
+than fixed routes [4], enabling data exchange in challenging
+scalability challenges commonly associated with blockchain
+conditions like sparse infrastructure or variable topologies.
+technology. In our sharding-based blockchain system, the
+These networks leverage intermittent connectivity among
+infrastructure layer is divided into multiple shards, each
+nodes, allowing communication even without direct pathways
+corresponding to a small region within the Opportunistic
+through the assistance of intermediate nodes. By utilizing
+Network, as shown in Fig. ??. Each shard is managed by a
+idle bandwidth and epidemic routing algorithms, opportunistic
+distinct controller within the controller layer. This partitioning
+networks offer benefits such as cost reduction, support for
+strategy significantly enhances network throughput, allowing
+low-latency applications, and improved resource utilization.
+for parallelized processing and improved scalability. The deAdditionally, these
+networks addres
+s the need for communicacentralized nature of sharding-based blockchain ensures
+robust         tion in highly unpredictable environments by adapting to the
+and secure operations with the advantages of tamper resistance
+unstable topology and intermittent connections present in such
+and no single-point failure vulnerabilities. The integration
+scenarios.
+of sharding-based blockchain with Opportunistic Networks
+III. S MART C ONTRACT I NTEGRATION W ITH
+leverages the advantages of both technologies. By aligning each
+O PPORTUNISTIC N ETWORK
+shard with a specific region in the Opportunistic Network, the
+A. System Overview
+system becomes easier to manage and monitor. Each controller
+1) System Model: In our innovative approach to Smart in the controller layer is
+responsible for
+ managing and securely
+               Contract Integration with Opportunistic Networks, we introduce re
+cording pertinent network data
+ through smart contracts,
+               a dynamic system model aimed at enhancing efficiency and ensuring
+ that critical information is
+immutably stored on the
+               transparency within the network, as illustrated in Fig. 1. The bl
+ockchain. This proactive appro
+ach fortifies the reliability of
+
+Fig. 1: Proposal design
+nodes in handling various transactions and introduces a layer
+of transparency to the network’s operations.
+
+gies should be devised to foster a secure and transparent
+environment, establishing trust in data transactions.
+
+IV. P ERFORMANCE E VALUATION
+B. Problem statement
+1) Performance:
+• Optimal Routing Efficiency: Utilize smart contracts to
+optimize the routing path within opportunistic network,
+enabling nodes to dynamically identify and adapt to the
+most efficient routing paths despite intermittent connectivity, thus minimizing
+delays and ensu
+ring timely message
+               delivery.
+• Resource management: Efficient resource allocation
+within opportunistic network requires addressing the
+limited storage, processing power, and battery life of
+individual nodes. The problem statement involves optimizing strategies that effe
+ctively utilize
+ these constrained
+               resources while maintaining network performance.
+• Efficient Transaction Handling: Utilize opportunistic
+network to handle peer-to-peer transactions in challengFig. 2: Impact or Network
+ Size in Route
+Finding
+               ing environments by integrating blockchain technology.
+The decentralized nature of blockchain ensures secure
+and efficient transaction processing, fostering a reliable A. Experiment setup
+environment for peer-to-peer transactions.
+In this section, we analyze the performance of our proposed
+2) Security and Transparency:
+system using smart contracts and compare the metrics of
+• Increased Security and Availability in Challenging En- our proposed platform w
+ith the system
+without using smart
+               vironments: Utilize blockchain technology to enhance the contract
+s in two scenarios: ideal envi
+ronment and real-world
+               security and availability of nodes in opportunistic network, envi
+ronment with the inconsistent
+model. In ideal environment,
+               particularly in dynamic and unpredictable connectivity all nodes
+are online and function normal
+ly all the time.
+               scenarios. Strategies should be devised to mitigate dis- Whereas
+inconsistent model for real-wo
+rld environment refers
+               ruptions, enhance node availability, and maintain network to case
+s in real-world scenarios wher
+e not all nodes in an
+               functionality in challenging environments.
+opportunistic network are consistently available due to various
+• Transparency and Trust: Implement mechanisms that
+factors like power constraints, hardware failures, and node
+leverage blockchain technology with smart contracts to mobility. We define the n
+odes that are u
+nstable as inconsistent
+               guarantee transparent communication and decision-making nodes. To
+ simulate this inconsistency,
+we introduced a model
+               processes among nodes in opportunistic network. Strate- where a c
+ertain percentage of nodes in
+the network are
+
+Parameter
+
+Value
+
+The number of blockchain shards
+
+3
+
+The initial number of nodes
+
+9
+
+The maximum number of nodes
+
+36
+
+The initial number of inconsistent
+nodes
+
+1
+
+The maximum number of
+inconsistent nodes
+
+10
+
+Propagation Model
+
+logDistance, exp=4.5
+
+Network Type
+
+adhoc
+
+Mobility Model
+
+Random Direction
+
+TABLE I: Simulation Parameters
+
+b) Performance in Inconsistent Environment: Fig. 3
+illustrates the impact of node inconsistency on the optimal
+route-finding process. As shown, even in an environment with
+inconsistent nodes, the use of smart contracts still outperforms
+the traditional method in terms of route-finding efficiency.
+Each shard’s controller pushes the status of each node in realtime to smart cont
+racts so that w
+hen determining the optimal
+               route from source to destination, nodes don’t have to check
+if neighbor nodes are up or not. As a result, the performance
+gain when using smart contracts compared to not using them
+becomes increasingly significant as the number of nodes in the
+network increases. Specifically, when there are 36 nodes, the
+performance improvement with smart contracts reaches up to
+250% compared to the traditional method.
+
+offline at a certain time interval. This model allows us to
+evaluate the robustness of our system in a more realistic
+and challenging environment. We used Mininet-Wifi [10] to
+deploy an opportunistic network and Tezos-k8s [11] to deploy
+Tezos blockchain infrastructure on a Kubernetes [12] cluster
+for testing. Besides, we use PyTezos [13] to handle contract
+interaction with Python 3.11 and Ubuntu 20.04. The parameters
+setting used in the simulations is summarized in Table I.
+B. Results and Analysis
+1) Performance: In our experiment, we set up to calculate
+the time it takes for a node to find the optimal route from itself
+to the destination node in two scenarios: ideal environment
+and real-world environment with inconsistent model.
+a) Performance in Ideal Environment: Fig. 2 shows
+the superior performance of our proposed scheme using
+smart contracts compared to that when not using ones. In
+a system not using smart contracts, the process of finding
+the optimal route from the source to the destination node
+involves nodes repeatedly searching for the shortest neighbor
+node and checking if that node is the destination node. In this
+process, each node has to ping and check the distance between
+itself and the neighbor, as well as its coverage area. However,
+with the integration of smart contracts, we have a controller
+responsible for pushing all the necessary information, such
+as distance and coverage area, to the smart contract. As a
+result, when finding the optimal route, nodes no longer need
+to ping each other, significantly reducing the computational
+overhead and enhancing the efficiency of the route-finding
+process. Specifically, when the number of nodes in our platform
+reaches 36, the performance enhancement due to the smart
+contract integration becomes particularly evident. At this scale,
+the time to find a route when using smart contracts improves
+by approximately 300% compared to the system without smart
+contracts. However, with a smaller number of nodes, specifically
+9, the performance of the system not using smart contracts
+is slightly better. This is because, with a smaller node count,
+fetching information from the smart contract takes longer than
+the traditional ping method, leading to a slight delay in route
+determination.
+
+Fig. 3: Impact or Network Size in Route Finding in Inconsistent
+Environment
+2) Security:
+a) Transparency and Trust: One of the key advantages
+of integrating smart contracts with opportunistic networks is
+the enhanced transparency and trust in data transactions. In
+traditional systems, nodes often rely on centralized mechanisms
+to verify the correctness of stored data. However, with the
+introduction of smart contracts on the blockchain, each node can
+independently verify the integrity and correctness of the data
+stored on the blockchain. This decentralized verification process
+eliminates the need for third-party validation and ensures that
+the data is tamper-proof and immutable. This enhances the
+overall trustworthiness of the system and provides a transparent
+mechanism for data verification. In scenarios where the network
+consists of nodes with inconsistent status or where the network
+size is large, this feature becomes particularly beneficial. It
+allows the network to maintain a high level of data integrity
+and reliability, even in challenging environments.
+b) Increased Security and Availability in Challenging
+Environments: Fig. 4 illustrates the impact of node inconsistency on the node-st
+atus checking i
+n an environment where
+               nodes frequently switch between online and offline states. As
+demonstrated, even in a network with inconsistent node statuses,
+the utilization of smart contracts enhances the efficiency of the
+node status-checking process.
+When the network comprises a small number of nodes, the
+traditional method, where nodes have to ping each other to
+
+check if a node is offline or online, performs better than the
+smart contract approach. However, as the number of nodes in
+the network grows, the performance advantage of using smart
+contracts becomes increasingly significant. In detail, when
+there are 36 nodes, the performance improvement with smart
+contracts reaches up to 175% compared to the method without
+smart contracts.
+
+The introduction of a sharding-based blockchain designed
+to enhance throughput by distributing the workload across
+multiple shards, making the system easier to manage.
+While our approach shows promising results, there are still
+challenges and limitations to address, such as scalability issues,
+security concerns, and adaptability to dynamic environments.
+Future work will focus on addressing these challenges and
+further optimizing the proposed system to meet the evolving
+requirements of opportunistic networks in the 5G era.
+•
+
+R EFERENCES
+
+Fig. 4: Impact or Network Size in Checking Node Status In
+Inconsistent Environment
+
+C. Challenges and Limitations
+While our proposed sharding-based blockchain in an opportunistic network environ
+ment offers sig
+nificant advantages
+               in terms of transparency, security, and reliability, it also
+presents several challenges and limitations. As the number
+of transactions and nodes in the network increases, managing
+and maintaining the blockchain can become more complex.
+Although sharding helps to distribute the workload, it may also
+introduce challenges related to cross-shard transactions and
+synchronization. Additionally, while blockchain technology
+inherently provides security through its decentralized and
+tamper-resistant nature, the integration with opportunistic
+networks may introduce vulnerabilities. Ensuring the security
+of the network against various attacks remains a challenge.
+Furthermore, utilizing opportunistic networks with limited
+resource devices can be challenging, especially in meeting
+the real-time requirements for peer-to-peer payments.
+V. C ONCLUSION
+In this paper, we introduced a novel approach to enhance
+transparency, security, and reliability for nodes in opportunistic network envir
+onments by inte
+grating a sharding-based
+               blockchain system. Our proposed system leverages the benefits
+of blockchain technology to store essential network information,
+thereby improving the overall performance of the network.
+The main contributions of this paper include:
+• The proposal to use blockchain in an opportunistic
+network environment to enhance transparency, security,
+and reliability in transaction processing and network
+operation.
+
+[1] M. . Company, “The future of payments in africa,” 2022. [Online].
+Available: https://www.mckinsey.com/industries/financial-services/ourinsights/th
+e-future-of-pay
+ments-in-africa
+               [2] G. F. Magazine. (2023) Africa: Digital payments progress. Glo
+bal
+Finance Magazine. [Online]. Available: https://gfmag.com/features/africadigital-
+payments-progre
+ss
+               [3] M. Singh, P. Verma, and A. Verma, “Security in opportunistic
+networks,”
+in Opportunistic networks. CRC Press, 2021, pp. 299–312.
+[4] A.- Manole, R.-I. Ciobanu, C. Dobre, and R. Purnichescu-Purtan,
+“Opportunistic network algorithms for internet traffic offloading in music
+festival scenarios,” Sensors, vol. 21, no. 10, p. 3315, 2021.
+[5] H. Yang, Y. Liang, Q. Yao, S. Guo, A. Yu, and J. Zhang, “Blockchainbased sec
+ure distributed
+ control for software defined optical networking,”
+               China Communications, vol. 16, no. 6, pp. 42–54, 2019.
+[6] H. Nam Nguyen, H. Anh Tran, S. Fowler, and S. Souihi, “A survey of
+blockchain technologies applied to software-defined networking: Research
+challenges and solutions,” IET Wireless Sensor Systems, vol. 11, no. 6,
+pp. 233–247, 2021.
+[7] P. Bottoni, N. Gessa, G. Massa, R. Pareschi, H. Selim, and E. Arcuri,
+“Intelligent smart contracts for innovative supply chain management,”
+Frontiers in Blockchain, vol. 3, p. 52, 2020.
+[8] A. Hafid, A. S. Hafid, and M. Samih, “Scaling blockchains: A comprehensive s
+urvey,” IEEE Ac
+cess, vol. 8, pp. 125 244–125 262, 2020.
+               [9] G. Wang, Z. J. Shi, M. Nixon, and S. Han, “Sok: Sharding on b
+lockchain,”
+in Proceedings of the 1st ACM Conference on Advances in Financial
+Technologies, 2019, pp. 41–61.
+[10] R. R. Fontes, S. Afzal, S. H. Brito, M. A. Santos, and C. E. Rothenberg,
+“Mininet-wifi: Emulating software-defined wireless networks,” in 2015
+11th International Conference on Network and Service Management
+(CNSM). IEEE, 2015, pp. 384–389.
+[11] O. Alpha. Tezos-k8s. Oxhead Alpha, Inc. [Online]. Available:
+https://tezos-k8s.io/
+[12] T. Kubernetes, “Kubernetes,” Kubernetes. Retrieved May, vol. 24, p.
+2019, 2019.
+[13] B. Bad. Pytezos. Baking Bad. [Online]. Available: https://pytezos.org/
