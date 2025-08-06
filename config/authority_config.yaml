@@ -1,0 +1,50 @@
+# Authority Configuration
+authority:
+  host: "0.0.0.0"
+  port: 8080
+  debug: false
+  log_level: "INFO"
+  
+  # Network configuration
+  network:
+    default_ssid: "authority-network"
+    default_channel: 1
+    default_mode: "g"
+    propagation_model: "logDistance"
+    propagation_exp: 4.5
+    
+  # Security settings
+  security:
+    enable_auth: true
+    jwt_secret: "your-secret-key-here"
+    session_timeout: 3600
+    
+  # Client management
+  clients:
+    max_connections: 100
+    heartbeat_interval: 30
+    cleanup_interval: 300
+    
+  # Database settings (if using external DB)
+  database:
+    type: "sqlite"  # sqlite, postgresql, mysql
+    url: "sqlite:///authority.db"
+    
+  # Redis settings (for caching)
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+    
+  # API settings
+  api:
+    rate_limit: 100  # requests per minute
+    cors_enabled: true
+    cors_origins: ["*"]
+    
+  # Monitoring
+  monitoring:
+    enabled: true
+    metrics_port: 9090
+    health_check_interval: 30

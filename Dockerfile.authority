@@ -1,0 +1,65 @@
+# Authority Component Dockerfile
+FROM python:3.9-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    git \
+    make \
+    help2man \
+    pyflakes3 \
+    python3-pep8 \
+    tcpdump \
+    wpan-tools \
+    net-tools \
+    iputils-ping \
+    iperf3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    six \
+    numpy \
+    matplotlib \
+    flask \
+    requests \
+    paho-mqtt \
+    docker
+
+# Create app directory
+WORKDIR /app
+
+# Copy Mininet-WiFi core
+COPY mn_wifi/ ./mn_wifi/
+COPY util/ ./util/
+COPY setup.py ./
+
+# Install Mininet-WiFi
+RUN pip install -e .
+
+# Copy authority-specific code
+COPY authority/ ./authority/
+
+# Create non-root user
+RUN useradd -m -s /bin/bash mininet && \
+    echo "mininet ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set ownership
+RUN chown -R mininet:mininet /app
+
+# Switch to non-root user
+USER mininet
+
+# Expose ports
+EXPOSE 8080 12345
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import socket; socket.socket().connect(('localhost', 8080))" || exit 1
+
+# Default command
+CMD ["python", "authority/main.py"]

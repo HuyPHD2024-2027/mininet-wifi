@@ -1,0 +1,64 @@
+# Client Component Dockerfile
+FROM python:3.9-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    git \
+    make \
+    help2man \
+    pyflakes3 \
+    python3-pep8 \
+    tcpdump \
+    wpan-tools \
+    net-tools \
+    iputils-ping \
+    iperf3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    six \
+    numpy \
+    matplotlib \
+    requests \
+    paho-mqtt \
+    click
+
+# Create app directory
+WORKDIR /app
+
+# Copy Mininet-WiFi core
+COPY mn_wifi/ ./mn_wifi/
+COPY util/ ./util/
+COPY setup.py ./
+
+# Install Mininet-WiFi
+RUN pip install -e .
+
+# Copy client-specific code
+COPY client/ ./client/
+
+# Create non-root user
+RUN useradd -m -s /bin/bash mininet && \
+    echo "mininet ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set ownership
+RUN chown -R mininet:mininet /app
+
+# Switch to non-root user
+USER mininet
+
+# Expose ports
+EXPOSE 8081
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8081/health')" || exit 1
+
+# Default command
+CMD ["python", "client/main.py"]

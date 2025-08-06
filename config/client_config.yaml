@@ -1,0 +1,59 @@
+# Client Configuration
+client:
+  host: "0.0.0.0"
+  port: 8081
+  debug: false
+  log_level: "INFO"
+  
+  # Authority connection
+  authority:
+    url: "http://localhost:8080"
+    timeout: 30
+    retry_attempts: 3
+    retry_delay: 5
+    
+  # Network capabilities
+  capabilities:
+    - "network_control"
+    - "policy_enforcement"
+    - "monitoring"
+    - "traffic_analysis"
+    
+  # Security settings
+  security:
+    enable_ssl: false
+    verify_ssl: true
+    client_cert: null
+    client_key: null
+    
+  # Connection settings
+  connection:
+    heartbeat_interval: 30
+    reconnect_attempts: 5
+    reconnect_delay: 10
+    
+  # Local storage
+  storage:
+    data_dir: "./data"
+    log_dir: "./logs"
+    cache_dir: "./cache"
+    
+  # API settings
+  api:
+    rate_limit: 50  # requests per minute
+    cors_enabled: true
+    cors_origins: ["*"]
+    
+  # Monitoring
+  monitoring:
+    enabled: true
+    metrics_port: 9091
+    health_check_interval: 30
+    
+  # Logging
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file: "./logs/client.log"
+    max_size: "10MB"
+    backup_count: 5
